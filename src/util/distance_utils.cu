@@ -82,6 +82,7 @@ void tsnecuda::util::KNearestNeighbors(tsnecuda::GpuOptions &gpu_opt,
                                        const float *const points, const int num_dims,
                                        const int num_points, const int num_near_neighbors)
 {
+    std::cout << "arcmsh::util/distance_utils.cu::KNearestNeighbors called" << std::endl;
     const int32_t kNumCells = static_cast<int32_t>(
         std::sqrt(static_cast<float>(num_points)));
     const int32_t kNumCellsToProbe = 20;

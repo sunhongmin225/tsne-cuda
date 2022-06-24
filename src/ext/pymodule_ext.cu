@@ -35,6 +35,8 @@ void pymodule_tsne(float *result,
                    int num_snapshots,
                    int distance_metric)
 {
+    std::cout << "arcmsh::ext/pymodule_ext.cu::pymodule_tsne called" << std::endl;
+
     // Extract the dimensions of the points array
     ssize_t num_points = dims[0];
     ssize_t num_dims = dims[1];

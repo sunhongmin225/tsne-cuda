@@ -16,13 +16,18 @@
 void tsnecuda::RunTsne(tsnecuda::Options &opt,
                        tsnecuda::GpuOptions &gpu_opt)
 {
+    std::cout << "arcmsh::fit_tsne.cu::RunTsne called" << std::endl;
+
     auto start = std::chrono::high_resolution_clock::now();
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     auto total_time = duration;
     auto _time_initialization = duration;
-    auto _time_knn = duration;
+    // auto _time_knn = duration;
+    auto _time_knn_core = duration;
+    auto _time_knn_postprocess = duration;
+    auto _time_knn_maxnorm = duration;
     auto _time_symmetry = duration;
     auto _time_init_low_dim = duration;
     auto _time_init_fft = duration;
@@ -116,18 +121,27 @@ void tsnecuda::RunTsne(tsnecuda::Options &opt,
     // TODO: Add suport for arbitrary metrics on GPU (Introduced by recent FAISS computation)
     // TODO: Expose Multi-GPU computation (+ Add streaming memory support for GPU optimization)
     tsnecuda::util::KNearestNeighbors(gpu_opt, opt, knn_indices, knn_squared_distances, high_dim_points, high_dim, num_points, num_neighbors);
+
+    END_IL_TIMER(_time_knn_core);
+    START_IL_TIMER();
+
     thrust::device_vector<long> knn_indices_long_device(knn_indices, knn_indices + num_points * num_neighbors);
     thrust::device_vector<int> pij_indices_device(num_points * num_neighbors);
     tsnecuda::util::PostprocessNeighborIndices(gpu_opt, pij_indices_device, knn_indices_long_device,
                                                num_points, num_neighbors);
+    END_IL_TIMER(_time_knn_postprocess);
+    START_IL_TIMER();
 
     // Max-norm the distances to avoid exponentiating by large numbers
     thrust::device_vector<float> knn_squared_distances_device(knn_squared_distances,
                                                               knn_squared_distances + (num_points * num_neighbors));
     tsnecuda::util::MaxNormalizeDeviceVector(knn_squared_distances_device);
 
-    END_IL_TIMER(_time_knn);
+    END_IL_TIMER(_time_knn_maxnorm);
     START_IL_TIMER();
+
+    // END_IL_TIMER(_time_knn);
+    // START_IL_TIMER();
 
     if (opt.verbosity > 0)
     {
@@ -570,7 +584,10 @@ void tsnecuda::RunTsne(tsnecuda::Options &opt,
     if (opt.verbosity > 0)
     {
         PRINT_IL_TIMER(_time_initialization);
-        PRINT_IL_TIMER(_time_knn);
+        // PRINT_IL_TIMER(_time_knn);
+        PRINT_IL_TIMER(_time_knn_core);
+        PRINT_IL_TIMER(_time_knn_postprocess);
+        PRINT_IL_TIMER(_time_knn_maxnorm);
         PRINT_IL_TIMER(_time_symmetry);
         PRINT_IL_TIMER(_time_init_low_dim);
         PRINT_IL_TIMER(_time_init_fft);

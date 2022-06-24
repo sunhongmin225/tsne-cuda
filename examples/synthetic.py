@@ -1,15 +1,16 @@
-from keras.datasets import mnist
 from tsnecuda import TSNE
 import matplotlib.pyplot as plt
+import numpy as np
 
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = np.random.rand(100, 4, 4)
+y_train = np.random.randint(4, size=100)
 
-print(y_train.shape) # (60000,)
-print(x_train.shape) # (60000, 28, 28)
+print(y_train.shape)
+print(x_train.shape)
 
-tsne = TSNE(n_iter=1000, verbose=1, num_neighbors=64)
-tsne_results = tsne.fit_transform(x_train.reshape(60000,-1))
-
+# tsne = TSNE(n_iter=1000, verbose=1, num_neighbors=64)
+tsne = TSNE(n_iter=200, verbose=1, num_neighbors=8)
+tsne_results = tsne.fit_transform(x_train.reshape(x_train.shape[0], -1))
 
 print(tsne_results.shape)
 

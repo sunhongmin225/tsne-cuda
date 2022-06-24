@@ -192,6 +192,8 @@ class TSNE(object):
             y {None} -- The initialization to use for the T-SNE (default: {None})
         """
 
+        print('arcmsh::python/tsnecuda/TSNE.py::fit_transform called')
+
         # Setup points/embedding requirements
         self.points = N.require(X, N.float32, ['CONTIGUOUS', 'ALIGNED'])
         self.embedding = N.zeros(shape=(X.shape[0], self.n_components))
@@ -210,7 +212,7 @@ class TSNE(object):
 
         # Handle dumping and viz strings
         self.dump_file_ = N.require(ord_string(self.dump_file), N.uint8, [
-                                    'CONTIGUOUS', 'ALIGNED'])
+                                    'CONTIGUOUS', 'ALIGNED']) # array([100, 117, 109, 112,  46, 116, 120, 116,   0], dtype=uint8)
         self.viz_server_ = N.require(ord_string(self.viz_server), N.uint8, [
                                      'CONTIGUOUS', 'ALIGNED'])
 
